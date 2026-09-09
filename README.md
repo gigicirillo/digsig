@@ -1,89 +1,75 @@
 # DigSig
 
-Base web per un sistema di digital signage multi-TV senza database.
+Sistema web di digital signage multi-TV senza database.
+
+## Versione attuale: v0.2
+
+La piattaforma ora include:
+
+- dashboard amministrativa
+- creazione ed eliminazione schermi
+- creazione ed eliminazione playlist
+- creazione ed eliminazione media
+- assegnazione playlist agli schermi
+- player fullscreen per browser TV
+- pairing TV con codice a 6 cifre
+- aggiornamento automatico della configurazione ogni 30 secondi
+- persistenza su file JSON tramite PHP
+- fallback locale tramite `localStorage` quando il progetto gira su GitHub Pages
 
 ## Architettura
 
-- `index.html` — dashboard amministrativa di base
-- `player.html?screen=ID` — player fullscreen da aprire sul browser della TV
-- `data/config.json` — configurazione di schermi, playlist e media
-- `assets/js/player.js` — motore di riproduzione
-- `assets/js/app.js` — dashboard
+- `index.html` — dashboard amministrativa
+- `player.html` — player TV e procedura di pairing
+- `player.html?screen=ID` — apertura diretta di uno schermo già configurato
+- `data/config.json` — configurazione centrale
+- `api/config.php` — API lettura/scrittura configurazione JSON
+- `api/pair.php` — pairing TV a 6 cifre
+- `assets/js/app.js` — logica dashboard
+- `assets/js/player.js` — motore di riproduzione TV
 
-## Demo
+## Modalità GitHub Pages
 
-Schermo demo:
+GitHub Pages è statico e non esegue PHP. La dashboard funziona quindi in modalità demo/localStorage: puoi creare schermi, playlist e media sul browser in uso, ma le modifiche non vengono condivise automaticamente con altri dispositivi.
 
-`player.html?screen=reception-demo`
+## Modalità produzione senza database
 
-Secondo schermo:
+Per avere sincronizzazione reale tra dashboard e TV basta pubblicare gli stessi file su un hosting con PHP 8+ e permesso di scrittura sulla cartella `data`.
 
-`player.html?screen=sala-fitness`
+Il flusso diventa:
 
-## Configurazione schermi
+`Dashboard → api/config.php → data/config.json → Player TV`
 
-In `data/config.json` ogni schermo ha un ID univoco e una playlist assegnata:
+Non è necessario MySQL o PostgreSQL.
 
-```json
-{
-  "id": "reception-demo",
-  "name": "Reception Demo",
-  "playlistId": "welcome"
-}
-```
+## Pairing TV
 
-La TV dovrà semplicemente aprire:
-
-`https://TUO-DOMINIO/player.html?screen=reception-demo`
+1. Apri `player.html` sul browser del televisore senza parametri.
+2. Il player genera un codice a 6 cifre valido 15 minuti.
+3. Nella dashboard apri **Pairing TV**.
+4. Inserisci il codice, il nome dello schermo, la sede e la playlist.
+5. La TV riceve l'ID e apre automaticamente il contenuto assegnato.
+6. L'ID viene salvato nel `localStorage` del browser TV per gli avvii successivi.
 
 ## Tipi media supportati
 
-- `html`: slide testuale generata dal player
-- `image`: immagine via URL
-- `video`: video MP4/WebM via URL
-- `web`: pagina web in iframe, quando il sito sorgente lo consente
-
-Esempio immagine:
-
-```json
-{
-  "id": "promo-1",
-  "name": "Promo 1",
-  "type": "image",
-  "url": "media/promo-1.jpg",
-  "duration": 10
-}
-```
-
-Esempio video:
-
-```json
-{
-  "id": "video-1",
-  "name": "Video 1",
-  "type": "video",
-  "url": "media/video-1.mp4",
-  "duration": 20
-}
-```
+- `html` — slide testuale generata dal player
+- `image` — immagine via URL
+- `video` — video MP4/WebM via URL
+- `web` — pagina web in iframe, quando il sito sorgente consente l'embedding
 
 ## Aggiornamento TV
 
-Il player ricontrolla `config.json` ogni 30 secondi. Se la configurazione cambia, ricarica automaticamente la playlist assegnata.
+Il player ricontrolla la configurazione ogni 30 secondi. Se cambia la playlist o uno dei contenuti, aggiorna automaticamente la riproduzione.
 
-## Stato del progetto
+## Passi successivi consigliati
 
-Questa è la release base `v0.1`. La dashboard visualizza la configurazione ma non salva ancora modifiche direttamente dal browser, perché GitHub Pages è hosting statico. Il prossimo livello prevede una piccola API/backend oppure un meccanismo di scrittura autenticata verso GitHub/storage.
-
-## Roadmap consigliata
-
-1. Login amministratore
-2. CRUD Schermi
-3. CRUD Playlist
-4. Upload Media
-5. Assegnazione drag & drop
-6. Programmazione per data/orario
-7. Pairing TV tramite codice a 6 cifre
-8. Heartbeat online/offline reale
-9. Cache offline/PWA
-10. Multi-sede e gruppi di schermi
+1. upload reale dei file media sul server
+2. modifica degli elementi esistenti, oltre a crea/elimina
+3. ordinamento drag & drop delle playlist
+4. programmazione per data, giorno e fascia oraria
+5. heartbeat reale online/offline
+6. gruppi e sedi
+7. cache offline/PWA
+8. login amministratore e ruoli
+9. monitoraggio player e log di riproduzione
