@@ -1,0 +1,13 @@
+const params=new URLSearchParams(location.search);const screenId=params.get('screen')||'reception-demo';let config,screen,playlist,items=[],index=0,timer=null,lastVersion='';const stage=document.getElementById('stage');const badge=document.getElementById('badge');
+async function fetchConfig(){const r=await fetch('data/config.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('config');return r.json()}
+function resolve(c){config=c;screen=c.screens.find(s=>s.id===screenId);if(!screen)throw new Error('screen');playlist=c.playlists.find(p=>p.id===screen.playlistId);if(!playlist)throw new Error('playlist');items=playlist.items.map(id=>c.media.find(m=>m.id===id)).filter(Boolean);if(!items.length)throw new Error('empty');badge.textContent=`DigSig · ${screen.name}`}
+function clear(){if(timer)clearTimeout(timer);timer=null;stage.innerHTML=''}
+function showItem(item){clear();if(item.type==='html'){stage.innerHTML=`<div class="slide" style="background:${item.background||'#111'}"><div class="slide-inner"><div class="headline">${item.headline||''}</div><div class="subheadline">${item.subheadline||''}</div></div></div>`;timer=setTimeout(next,(item.duration||10)*1000);return}
+if(item.type==='image'){const img=document.createElement('img');img.className='media';img.src=item.url;img.alt='';stage.appendChild(img);timer=setTimeout(next,(item.duration||10)*1000);return}
+if(item.type==='video'){const v=document.createElement('video');v.className='media';v.src=item.url;v.autoplay=true;v.muted=true;v.playsInline=true;v.onended=next;v.onerror=()=>setTimeout(next,1000);stage.appendChild(v);v.play().catch(()=>{timer=setTimeout(next,(item.duration||15)*1000)});return}
+if(item.type==='web'){const f=document.createElement('iframe');f.className='web';f.src=item.url;stage.appendChild(f);timer=setTimeout(next,(item.duration||20)*1000);return}
+next()}
+function next(){index=(index+1)%items.length;showItem(items[index])}
+async function boot(){try{const c=await fetchConfig();resolve(c);index=0;showItem(items[index]);setInterval(checkUpdates,30000)}catch(e){stage.innerHTML=`<div class="error"><div><h1>DigSig</h1><p>Schermo non configurato: <strong>${screenId}</strong></p></div></div>`}}
+async function checkUpdates(){try{const c=await fetchConfig();const signature=JSON.stringify(c);if(lastVersion&&signature!==lastVersion){resolve(c);index=0;showItem(items[index])}lastVersion=signature}catch(e){console.warn('DigSig offline: continuo con la playlist corrente')}}
+boot().then(()=>{lastVersion=JSON.stringify(config)});
