@@ -14,16 +14,10 @@
 <body>
   <div id="stage"><div class="boot">DigSig · caricamento player…</div></div>
   <div class="badge" id="badge">DigSig</div>
-  <script>
-    window.addEventListener('error',function(e){
-      var stage=document.getElementById('stage');
-      if(stage&&stage.querySelector('.boot')){
-        stage.innerHTML='<div class="error"><div><h1>Errore avvio DigSig</h1><p>'+String(e.message||'JavaScript non caricato')+'</p></div></div>';
-      }
-    });
-  </script>
-  <script src="assets/js/player.js?v=20260909-1232"></script>
-  <script src="assets/js/rawhtml-player.js?v=20260909-1232"></script>
-  <script src="assets/js/design-player.js?v=20260909-1232"></script>
+  <script>window.addEventListener('error',function(e){var stage=document.getElementById('stage');if(stage&&stage.querySelector('.boot'))stage.innerHTML='<div class="error"><div><h1>Errore avvio DigSig</h1><p>'+String(e.message||'JavaScript non caricato')+'</p></div></div>'});</script>
+  <script src="assets/js/player-scid.js?v=20260909-1235"></script>
+  <script src="assets/js/player.js?v=20260909-1235"></script>
+  <script src="assets/js/rawhtml-player.js?v=20260909-1235"></script>
+  <script src="assets/js/design-player.js?v=20260909-1235"></script>
 </body>
 </html>
