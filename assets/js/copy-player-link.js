@@ -44,8 +44,17 @@
       actions.appendChild(btn);
     });
   }
+  function loadDesignModule(){
+    if(!document.querySelector('link[href*="assets/css/design.css"]')){
+      var css=document.createElement('link');css.rel='stylesheet';css.href='assets/css/design.css?v=20260909-1154';document.head.appendChild(css);
+    }
+    if(!document.querySelector('script[src*="assets/js/design.js"]')){
+      var js=document.createElement('script');js.src='assets/js/design.js?v=20260909-1154';document.body.appendChild(js);
+    }
+  }
   document.addEventListener('DOMContentLoaded',function(){
     enhance();
+    loadDesignModule();
     var table=document.getElementById('screensTable');
     if(table)new MutationObserver(enhance).observe(table,{childList:true,subtree:true});
   });
