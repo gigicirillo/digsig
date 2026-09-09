@@ -1,0 +1,63 @@
+{
+  "screens": [
+    {
+      "id": "reception-demo",
+      "name": "Reception Demo",
+      "location": "Sede principale",
+      "orientation": "landscape",
+      "playlistId": "welcome",
+      "status": "online"
+    },
+    {
+      "id": "sala-fitness",
+      "name": "Sala Fitness",
+      "location": "Area allenamento",
+      "orientation": "landscape",
+      "playlistId": "fitness",
+      "status": "offline"
+    }
+  ],
+  "playlists": [
+    {
+      "id": "welcome",
+      "name": "Welcome Loop",
+      "description": "Playlist demo per reception",
+      "items": ["welcome-slide", "website-demo"]
+    },
+    {
+      "id": "fitness",
+      "name": "Fitness Promo",
+      "description": "Playlist demo area fitness",
+      "items": ["fitness-slide"]
+    }
+  ],
+  "media": [
+    {
+      "id": "welcome-slide",
+      "name": "Benvenuto",
+      "type": "html",
+      "duration": 8,
+      "headline": "DIGSIG",
+      "subheadline": "Il tuo network di schermi, da un solo posto.",
+      "background": "linear-gradient(135deg,#07110c,#16291f)"
+    },
+    {
+      "id": "website-demo",
+      "name": "Website Demo",
+      "type": "html",
+      "duration": 8,
+      "headline": "MULTI TV",
+      "subheadline": "Ogni televisore apre il proprio link e riceve la playlist assegnata.",
+      "background": "linear-gradient(135deg,#10131a,#202b38)"
+    },
+    {
+      "id": "fitness-slide",
+      "name": "Fitness Slide",
+      "type": "html",
+      "duration": 8,
+      "headline": "ALLENATI. MUOVITI. VIVI.",
+      "subheadline": "Una comunicazione diversa per ogni area, sede o TV.",
+      "background": "linear-gradient(135deg,#1b0d12,#3b1723)"
+    }
+  ]
+}
