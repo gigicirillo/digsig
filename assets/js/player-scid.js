@@ -1,9 +1,7 @@
 (function(){
-  var p=new URLSearchParams(location.search),scid=(p.get('scid')||'').toUpperCase();
-  if(!scid)return;
-  var originalFetch=window.fetch;
-  function inspectResponse(res){try{var clone=res.clone();clone.json().then(function(c){if(!c||!Array.isArray(c.screens))return;var s=c.screens.find(function(x){return String(x.scid||'').toUpperCase()===scid});if(s){localStorage.setItem('digsig-screen',s.id);if(!p.get('screen')){var u=new URL(location.href);u.searchParams.set('screen',s.id);u.searchParams.delete('scid');sessionStorage.setItem('digsig-scid-return',scid);location.replace(u.pathname+'?'+u.searchParams.toString())}}}).catch(function(){})}catch(e){}return res}
-  window.fetch=function(){return originalFetch.apply(this,arguments).then(inspectResponse)};
-  function resolve(){var sources=['api/config.php?ts='+Date.now(),'data/config.json?ts='+Date.now()],i=0;function next(){if(i>=sources.length){document.getElementById('stage').innerHTML='<div class="error"><div><h1>Schermo non trovato</h1><p>SCID: <strong>'+scid+'</strong></p></div></div>';return}originalFetch(sources[i++],{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(c){var s=(c.screens||[]).find(function(x){return String(x.scid||'').toUpperCase()===scid});if(!s){next();return}localStorage.setItem('digsig-screen',s.id);var u=new URL(location.href);u.searchParams.delete('scid');u.searchParams.set('screen',s.id);sessionStorage.setItem('digsig-scid-return',scid);location.replace(u.pathname+'?'+u.searchParams.toString())}).catch(next)}next()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resolve);else resolve();
+  var match=location.search.match(/[?&]scid=([^&]+)/i);if(!match)return;
+  var scid=decodeURIComponent(match[1]).toUpperCase(),found='';
+  function read(url){try{var x=new XMLHttpRequest();x.open('GET',url+(url.indexOf('?')>=0?'&':'?')+'ts='+Date.now(),false);x.send(null);if(x.status>=200&&x.status<300){var c=JSON.parse(x.responseText),screens=c.screens||[];for(var i=0;i<screens.length;i++){if(String(screens[i].scid||'').toUpperCase()===scid){found=screens[i].id;break}}}}catch(e){}}
+  read('api/config.php');if(!found)read('data/config.json');
+  if(found)localStorage.setItem('digsig-screen',found);else localStorage.removeItem('digsig-screen');
 })();
