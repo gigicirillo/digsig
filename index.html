@@ -40,7 +40,7 @@
 
       <section id="screens" class="view">
         <article class="panel">
-          <div class="panel-head"><div><h2>Gestione schermi</h2><span>Ogni TV ha un player dedicato</span></div><button class="btn btn-primary" data-open="screenModal">+ Nuovo schermo</button></div>
+          <div class="panel-head"><div><h2>Gestione schermi</h2><span>Ogni TV ha un player dedicato</span></div><button class="btn btn-primary" id="newScreenBtn">+ Nuovo schermo</button></div>
           <div id="screensTable"></div>
         </article>
       </section>
@@ -76,7 +76,7 @@
     </main>
   </div>
 
-  <dialog id="screenModal" class="modal"><form id="screenForm" class="modal-card"><div class="modal-head"><h2>Nuovo schermo</h2><button type="button" class="icon-btn" data-close>×</button></div><label>Nome<input name="name" required placeholder="TV Reception"></label><label>Sede / zona<input name="location" placeholder="Fabro · Reception"></label><label>ID schermo<input name="id" placeholder="generato automaticamente"></label><label>Orientamento<select name="orientation"><option value="landscape">Orizzontale 16:9</option><option value="portrait">Verticale 9:16</option></select></label><label>Playlist<select name="playlistId" id="screenPlaylist"></select></label><div class="modal-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn btn-primary" type="submit">Salva schermo</button></div></form></dialog>
+  <dialog id="screenModal" class="modal"><form id="screenForm" class="modal-card"><input type="hidden" name="editId"><div class="modal-head"><h2 id="screenModalTitle">Nuovo schermo</h2><button type="button" class="icon-btn" data-close>×</button></div><label>Nome<input name="name" required placeholder="TV Reception"></label><label>Sede / zona<input name="location" placeholder="Fabro · Reception"></label><label>ID schermo<input name="id" id="screenIdInput" placeholder="generato automaticamente"></label><p id="screenIdHelp" class="muted hidden">L'ID resta invariato per non perdere il collegamento con la TV già associata.</p><label>Orientamento<select name="orientation"><option value="landscape">Orizzontale 16:9</option><option value="portrait">Verticale 9:16</option></select></label><label>Playlist<select name="playlistId" id="screenPlaylist"></select></label><div class="modal-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn btn-primary" type="submit">Salva schermo</button></div></form></dialog>
 
   <dialog id="playlistModal" class="modal modal-wide"><form id="playlistForm" class="modal-card"><input type="hidden" name="editId"><div class="modal-head"><h2 id="playlistModalTitle">Nuova playlist</h2><button type="button" class="icon-btn" data-close>×</button></div><div class="grid-2 compact"><label>Nome<input name="name" required placeholder="Promo Settembre"></label><label>Descrizione<input name="description" placeholder="Loop promozionale"></label></div><div class="grid-2 compact"><label>Attiva dal<input name="activeFrom" type="date"></label><label>Attiva fino al<input name="activeTo" type="date"></label><label>Dalle ore<input name="startTime" type="time"></label><label>Alle ore<input name="endTime" type="time"></label></div><fieldset><legend>Contenuti e ordine</legend><div id="playlistMediaChoices" class="sortable-list"></div></fieldset><div class="modal-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn btn-primary" type="submit">Salva playlist</button></div></form></dialog>
 
