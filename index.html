@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DigSig — Digital Signage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">DS</div>
+        <div><strong>DigSig</strong><span>Digital Signage</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="screens">Schermi</button>
+        <button class="nav-item" data-view="playlists">Playlist</button>
+        <button class="nav-item" data-view="media">Media</button>
+      </nav>
+      <div class="sidebar-foot">v0.1 · JSON edition</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CONTROL CENTER</p>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <a class="btn btn-primary" href="player.html?screen=reception-demo" target="_blank" rel="noreferrer">Apri TV demo</a>
+      </header>
+
+      <section id="dashboard" class="view active">
+        <div class="stats" id="stats"></div>
+        <div class="grid-2">
+          <article class="panel">
+            <div class="panel-head"><h2>Schermi</h2><span>Stato rete</span></div>
+            <div id="screenOverview"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h2>Playlist</h2><span>Contenuti assegnabili</span></div>
+            <div id="playlistOverview"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="screens" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><h2>Gestione schermi</h2><span>Ogni TV apre un URL player dedicato</span></div></div>
+          <div id="screensTable"></div>
+        </article>
+      </section>
+
+      <section id="playlists" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><h2>Playlist</h2><span>Sequenze di contenuti riprodotte sui display</span></div></div>
+          <div id="playlistCards" class="cards"></div>
+        </article>
+      </section>
+
+      <section id="media" class="view">
+        <article class="panel">
+          <div class="panel-head"><div><h2>Media Library</h2><span>Immagini, video e pagine web configurate nel JSON</span></div></div>
+          <div id="mediaCards" class="cards"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
