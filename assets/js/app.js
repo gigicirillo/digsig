@@ -1,0 +1,12 @@
+const state={config:null};
+async function loadConfig(){const res=await fetch('data/config.json',{cache:'no-store'});state.config=await res.json();renderAll();}
+function el(id){return document.getElementById(id)}
+function stat(label,value){return `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`}
+function renderAll(){const c=state.config;el('stats').innerHTML=[stat('Schermi',c.screens.length),stat('Online',c.screens.filter(s=>s.status==='online').length),stat('Playlist',c.playlists.length),stat('Media',c.media.length)].join('');
+el('screenOverview').innerHTML=c.screens.map(s=>`<div class="list-row"><strong>${s.name}</strong><span class="muted">${s.location}</span><span class="status"><i class="dot ${s.status==='online'?'':'offline'}"></i>${s.status}</span><a class="link" target="_blank" href="player.html?screen=${encodeURIComponent(s.id)}">Apri</a></div>`).join('');
+el('playlistOverview').innerHTML=c.playlists.map(p=>`<div class="list-row"><strong>${p.name}</strong><span class="muted">${p.description}</span><span class="muted">${p.items.length} contenuti</span><span></span></div>`).join('');
+el('screensTable').innerHTML=c.screens.map(s=>`<div class="screen-row"><div><strong>${s.name}</strong><div class="muted">ID: ${s.id}</div></div><span>${s.location}</span><span>${c.playlists.find(p=>p.id===s.playlistId)?.name||'-'}</span><a class="link" target="_blank" href="player.html?screen=${encodeURIComponent(s.id)}">player ↗</a></div>`).join('');
+el('playlistCards').innerHTML=c.playlists.map(p=>`<div class="card"><h3>${p.name}</h3><p>${p.description}</p><p>${p.items.length} elementi</p></div>`).join('');
+el('mediaCards').innerHTML=c.media.map(m=>`<div class="card"><div class="media-preview" style="${m.background?`background:${m.background}`:''}">${m.type==='image'?`<img src="${m.url}" alt="">`:`<span>${m.type.toUpperCase()}</span>`}</div><h3>${m.name}</h3><p>${m.type} · ${m.duration||0}s</p></div>`).join('');}
+document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));btn.classList.add('active');el(btn.dataset.view).classList.add('active');el('pageTitle').textContent=btn.textContent;}));
+loadConfig().catch(err=>{console.error(err);document.body.insertAdjacentHTML('beforeend','<p style="padding:20px">Errore nel caricamento della configurazione.</p>')});
