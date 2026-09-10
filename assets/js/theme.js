@@ -11,10 +11,8 @@
     document.querySelectorAll('[data-theme-choice]').forEach(btn=>btn.classList.toggle('active',btn.dataset.themeChoice===value));
   }
   function applyBrand(){
-    document.title='Carosello — Digital Signage';
-    const brand=document.querySelector('.brand strong');if(brand)brand.textContent='Carosello';
-    const mark=document.querySelector('.brand-mark');if(mark)mark.textContent='C';
-    document.querySelectorAll('.help li').forEach(li=>{li.innerHTML=li.innerHTML.replace(/DigSig Player|Schermo Player/g,'Carosello Player').replace(/DigSig|Schermo/g,'Carosello')});
+    document.title='Lynca.Tv — Digital Signage';
+    document.querySelectorAll('.help li').forEach(li=>{li.innerHTML=li.innerHTML.replace(/DigSig Player|Schermo Player|Carosello Player/g,'Lynca.Tv Player').replace(/DigSig|Schermo|Carosello/g,'Lynca.Tv')});
   }
   function addLogout(){
     const actions=document.querySelector('.top-actions');if(!actions||document.getElementById('logoutBtn'))return;
