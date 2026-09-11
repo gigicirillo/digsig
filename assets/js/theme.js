@@ -29,10 +29,10 @@
     document.title='Lynca.Tv — Digital Signage';
     document.querySelectorAll('.help li').forEach(li=>{li.innerHTML=li.innerHTML.replace(/DigSig Player|Schermo Player|Carosello Player/g,'Lynca.Tv Player').replace(/DigSig|Schermo|Carosello/g,'Lynca.Tv')});
   }
-  function removePairingUI(){
-    document.querySelectorAll('.nav-item[data-view="pairing"]').forEach(el=>el.remove());
-    const pairing=document.getElementById('pairing');if(pairing)pairing.remove();
-    document.querySelectorAll('.top-actions a[href="player.html"]').forEach(el=>el.remove());
+  function hidePairingUI(){
+    document.querySelectorAll('.nav-item[data-view="pairing"]').forEach(el=>el.style.display='none');
+    const pairing=document.getElementById('pairing');if(pairing)pairing.style.display='none';
+    document.querySelectorAll('.top-actions a[href="player.html"]').forEach(el=>el.style.display='none');
   }
   function improveScreenFlow(){
     const screensView=document.getElementById('screens');
@@ -41,7 +41,7 @@
       const help=document.createElement('div');
       help.className='screen-flow-help muted';
       help.style.cssText='margin:0 0 18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;line-height:1.45';
-      help.innerHTML='<strong>Come collegare una TV:</strong> crea lo schermo, assegna la playlist, poi usa <strong>Player ↗</strong> oppure <strong>Copia link</strong>. Apri quel link sul televisore: nessun pairing necessario.';
+      help.innerHTML='<strong>Come collegare una TV:</strong> crea lo schermo, assegna la playlist, poi usa <strong>Player ↗</strong> oppure <strong>Copia link TV</strong>. Apri quel link sul televisore: nessun pairing necessario.';
       const head=panel.querySelector('.panel-head');
       if(head)head.insertAdjacentElement('afterend',help);else panel.prepend(help);
     }
@@ -52,15 +52,15 @@
     btn.addEventListener('click',()=>{sessionStorage.removeItem(AUTH);location.replace('login.html')});
     actions.appendChild(btn);
   }
+  function polishScreenActions(){
+    document.querySelectorAll('#screensTable .mini-btn').forEach(btn=>{if(btn.textContent.trim()==='Copia link')btn.textContent='Copia link TV'});
+  }
   function init(){
     let saved='dark';
     try{saved=localStorage.getItem(KEY)||'dark'}catch(e){}
-    apply(saved);applyBrand();removePairingUI();improveScreenFlow();addLogout();
+    apply(saved);applyBrand();hidePairingUI();improveScreenFlow();polishScreenActions();addLogout();
     document.addEventListener('click',e=>{const btn=e.target.closest('[data-theme-choice]');if(btn)apply(btn.dataset.themeChoice)});
-    const observer=new MutationObserver(()=>{
-      removePairingUI();
-      document.querySelectorAll('#screensTable .mini-btn').forEach(btn=>{if(btn.textContent.trim()==='Copia link')btn.textContent='Copia link TV'});
-    });
+    const observer=new MutationObserver(()=>{hidePairingUI();polishScreenActions()});
     observer.observe(document.body,{childList:true,subtree:true});
     window.digsigSetDashboardTheme=apply;
   }
