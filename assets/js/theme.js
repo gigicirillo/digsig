@@ -1,6 +1,6 @@
 (function(){
   const KEY='digsig-dashboard-theme',AUTH='carosello-dashboard-auth';
-  const CONFIG_API='https://www.futuraclubs.it/apitvlynca/config.php';
+  const CONFIG_API='https://futuraclubs.it/apitvlynca/config.php';
   const nativeFetch=window.fetch.bind(window);
   window.LYNCA_CONFIG_API=CONFIG_API;
   window.fetch=function(input,init){
