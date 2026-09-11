@@ -1,13 +1,18 @@
 (function(){
   const KEY='digsig-dashboard-theme',AUTH='carosello-dashboard-auth';
-  const API_CONFIG='https://www.futuraclubs.it/apitvlynca/config.php';
+  const BACKEND_BASE='https://www.futuraclubs.it/apitvlynca/';
   const nativeFetch=window.fetch.bind(window);
-  window.LYNCA_CONFIG_API=API_CONFIG;
+  window.LYNCA_BACKEND_BASE=BACKEND_BASE;
+  window.LYNCA_CONFIG_API=BACKEND_BASE+'config.php';
+  window.LYNCA_PAIR_API=BACKEND_BASE+'pair.php';
   window.fetch=function(input,init){
-    if(typeof input==='string'&&/^api\/config\.php(?:\?|$)/i.test(input)){
-      const suffix=input.includes('?')?input.slice(input.indexOf('?')):'';
-      return nativeFetch(API_CONFIG+suffix,init);
-    }
+    try{
+      const raw=typeof input==='string'?input:(input&&input.url)||'';
+      if(/^\.?\/?api\/(config|pair)\.php(?:[?#]|$)/i.test(raw)){
+        const file=raw.replace(/^\.?\/?api\//i,'');
+        return nativeFetch(BACKEND_BASE+file,init);
+      }
+    }catch(e){}
     return nativeFetch(input,init);
   };
   if(sessionStorage.getItem(AUTH)!=='1'){
