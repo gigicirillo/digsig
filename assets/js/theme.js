@@ -43,10 +43,12 @@
         c.screens.push({id,name,location:String(f.get('location')||''),orientation:String(f.get('orientation')||'landscape'),playlistIds:ids,playlistId:ids[0]||'',status:'offline',scid:scidFromId(id)});
       }
       await putConfig(c);
+      const dlg=document.getElementById('screenModal');
+      if(dlg&&dlg.open)dlg.close();
+      form.reset();
       try{localStorage.removeItem('digsig-config')}catch(err){}
       notice(editId?'Schermo aggiornato sul server.':'Schermo creato sul server.','good');
-      const dlg=document.getElementById('screenModal');if(dlg&&dlg.open)dlg.close();
-      setTimeout(()=>location.reload(),500);
+      setTimeout(()=>location.reload(),650);
     }catch(err){
       console.error('Lynca.Tv screen save',err);
       notice('Errore salvataggio schermo: '+String(err&&err.message||err),'warn');
