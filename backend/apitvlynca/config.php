@@ -1,6 +1,7 @@
 <?php
 $allowedOrigins = [
     'https://tv.lynca.it',
+    'https://www.tv.lynca.it',
     'https://gigicirillo.github.io'
 ];
 
@@ -11,12 +12,19 @@ if ($origin && in_array($origin, $allowedOrigins, true)) {
 }
 
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
+header('Access-Control-Max-Age: 86400');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    if ($origin && !in_array($origin, $allowedOrigins, true)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'origin_not_allowed']);
+        exit;
+    }
     http_response_code(204);
     exit;
 }
@@ -48,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
+    header('Allow: GET, POST, OPTIONS');
     echo json_encode(['error' => 'method_not_allowed']);
     exit;
 }
