@@ -27,20 +27,24 @@
     if(submit){submit.disabled=true;submit.textContent='Salvataggio…'}
     const f=new FormData(form),name=String(f.get('name')||'').trim();
     if(!name){notice('Inserisci il nome dello schermo.','warn');if(submit){submit.disabled=false;submit.textContent='Salva schermo'}return}
+    const usePlaylists=document.getElementById('screenUsePlaylists')?.checked===true;
+    const useDesign=document.getElementById('screenUseDesign')?.checked===true;
     const sel=document.getElementById('screenPlaylist');
-    const ids=sel?Array.from(sel.selectedOptions).map(o=>o.value).filter(Boolean):[];
+    const ids=usePlaylists&&sel?Array.from(sel.selectedOptions).map(o=>o.value).filter(Boolean):[];
+    const designId=useDesign?String(document.getElementById('screenDesign')?.value||''):'';
+    if(useDesign&&!designId){notice('Seleziona il design da applicare allo schermo.','warn');if(submit){submit.disabled=false;submit.textContent='Salva schermo'}return}
     try{
       const c=await getConfig();
       const editId=String(f.get('editId')||'').trim();
       if(editId){
         const i=c.screens.findIndex(s=>s.id===editId);if(i<0)throw new Error('screen not found');
         const old=c.screens[i];
-        c.screens[i]={...old,id:editId,name,location:String(f.get('location')||''),orientation:String(f.get('orientation')||'landscape'),playlistIds:ids,playlistId:ids[0]||'',scid:old.scid||scidFromId(editId)};
+        c.screens[i]={...old,id:editId,name,location:String(f.get('location')||''),orientation:String(f.get('orientation')||'landscape'),usePlaylists,playlistIds:ids,playlistId:ids[0]||'',useDesign,designId,scid:old.scid||scidFromId(editId)};
       }else{
         let id=String(f.get('id')||'').trim();
         if(!id){const base=baseSlug(name);id=base;let n=2;while(c.screens.some(s=>s.id===id)){id=base+'-'+n;n++}}
         if(c.screens.some(s=>s.id===id)){notice('Esiste già uno schermo con questo ID. Cambia ID oppure lascialo vuoto.','warn');if(submit){submit.disabled=false;submit.textContent='Salva schermo'}return}
-        c.screens.push({id,name,location:String(f.get('location')||''),orientation:String(f.get('orientation')||'landscape'),playlistIds:ids,playlistId:ids[0]||'',status:'offline',scid:scidFromId(id)});
+        c.screens.push({id,name,location:String(f.get('location')||''),orientation:String(f.get('orientation')||'landscape'),usePlaylists,playlistIds:ids,playlistId:ids[0]||'',useDesign,designId,status:'offline',scid:scidFromId(id)});
       }
       await putConfig(c);
       const dlg=document.getElementById('screenModal');
@@ -48,18 +52,19 @@
       form.reset();
       try{localStorage.removeItem('digsig-config')}catch(err){}
       notice(editId?'Schermo aggiornato sul server.':'Schermo creato sul server.','good');
-      setTimeout(()=>location.reload(),650);
+      if(typeof window.loadConfig==='function')window.loadConfig();
     }catch(err){
       console.error('Lynca.Tv screen save',err);
       notice('Errore salvataggio schermo: '+String(err&&err.message||err),'warn');
+    }finally{
       if(submit){submit.disabled=false;submit.textContent='Salva schermo'}
     }
   }
   async function verify(){const l=document.getElementById('storageMode');try{await getConfig();if(l)l.textContent='storage server · attivo'}catch(e){if(l)l.textContent='storage server · non raggiungibile'}}
   function hidePairing(){document.querySelectorAll('.nav-item[data-view="pairing"],#pairing').forEach(el=>el.style.display='none');document.querySelectorAll('.top-actions a[href="player.html"]').forEach(el=>el.style.display='none')}
-  function enhance(){document.title='Lynca.Tv — Digital Signage';hidePairing();document.querySelectorAll('#screensTable .mini-btn').forEach(b=>{if(b.textContent.trim()==='Copia link')b.textContent='Copia link TV'});const panel=document.querySelector('#screens .panel');if(panel&&!document.getElementById('screenDirectHelp')){const p=document.createElement('div');p.id='screenDirectHelp';p.className='muted';p.style.cssText='margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:12px';p.innerHTML='<strong>Collegamento TV:</strong> crea lo schermo e poi usa <strong>Copia link TV</strong>. La playlist può essere assegnata anche in un secondo momento.';panel.querySelector('.panel-head')?.insertAdjacentElement('afterend',p)}}
+  function enhance(){document.title='Lynca.Tv — Digital Signage';hidePairing();document.querySelectorAll('#screensTable .mini-btn').forEach(b=>{if(b.textContent.trim()==='Copia link')b.textContent='Copia link TV'});const panel=document.querySelector('#screens .panel');if(panel&&!document.getElementById('screenDirectHelp')){const p=document.createElement('div');p.id='screenDirectHelp';p.className='muted';p.style.cssText='margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:12px';p.innerHTML='<strong>Collegamento TV:</strong> crea lo schermo e poi usa <strong>Copia link TV</strong>.';panel.querySelector('.panel-head')?.insertAdjacentElement('afterend',p)}}
   function addLogout(){const a=document.querySelector('.top-actions');if(!a||document.getElementById('logoutBtn'))return;const b=document.createElement('button');b.type='button';b.id='logoutBtn';b.className='btn';b.textContent='Logout';b.onclick=()=>{sessionStorage.removeItem(AUTH);location.replace('login.html')};a.appendChild(b)}
   function loadScript(id,src){if(document.getElementById(id))return;const s=document.createElement('script');s.id=id;s.src=src;document.body.appendChild(s)}
-  function init(){let saved='dark';try{saved=localStorage.getItem(KEY)||'dark'}catch(e){}apply(saved);enhance();addLogout();verify();loadScript('lyncaDuplicateScript','assets/js/duplicate.js?v=20260914-2235');loadScript('lyncaSidebarLabelsScript','assets/js/sidebar-labels.js?v=20260914-2235');document.addEventListener('submit',handleScreen,true);document.addEventListener('click',e=>{const b=e.target.closest('[data-theme-choice]');if(b)apply(b.dataset.themeChoice)});new MutationObserver(enhance).observe(document.body,{childList:true,subtree:true});window.digsigSetDashboardTheme=apply}
+  function init(){let saved='dark';try{saved=localStorage.getItem(KEY)||'dark'}catch(e){}apply(saved);enhance();addLogout();verify();loadScript('lyncaDuplicateScript','assets/js/duplicate.js?v=20260914-2310');loadScript('lyncaSidebarLabelsScript','assets/js/sidebar-labels.js?v=20260914-2310');loadScript('lyncaScreenSettingsScript','assets/js/screen-settings.js?v=20260914-2310');document.addEventListener('submit',handleScreen,true);document.addEventListener('click',e=>{const b=e.target.closest('[data-theme-choice]');if(b)apply(b.dataset.themeChoice)});new MutationObserver(enhance).observe(document.body,{childList:true,subtree:true});window.digsigSetDashboardTheme=apply}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
