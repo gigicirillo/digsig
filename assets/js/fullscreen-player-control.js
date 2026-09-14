@@ -1,0 +1,5 @@
+(function(){
+  function designForCurrent(){try{if(!window.config||!window.screen||!screen.designId||!Array.isArray(config.designs))return null;return config.designs.find(d=>d.id===screen.designId)||null}catch(e){return null}}
+  function apply(){const b=document.getElementById('fullscreenBtn');if(!b)return;const d=designForCurrent(),c=d&&d.fullscreenButton||null;const visible=c?c.visible!==false:true,enabled=c?c.enabled!==false:true,x=c&&isFinite(Number(c.x))?Number(c.x):96,y=c&&isFinite(Number(c.y))?Number(c.y):5;b.style.display=visible?'grid':'none';b.disabled=!enabled;b.style.left=x+'%';b.style.top=y+'%';b.style.right='auto';b.style.transform='translate(-50%,-50%)';b.style.opacity=enabled?'.78':'.34';b.style.cursor=enabled?'pointer':'default';b.style.pointerEvents=enabled?'auto':'none';b.setAttribute('aria-disabled',enabled?'false':'true')}
+  setInterval(apply,1000);setTimeout(apply,250);setTimeout(apply,1200);
+})();
