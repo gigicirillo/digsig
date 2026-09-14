@@ -19,6 +19,16 @@
     });
   }
 
+  function restartIfStillCurrent(v){
+    setTimeout(()=>{
+      if(!v||!v.isConnected)return;
+      try{
+        v.currentTime=0;
+        tryPlay(v);
+      }catch(e){}
+    },650);
+  }
+
   function prepareVideo(v){
     if(!v||pending.has(v))return;
     pending.add(v);
@@ -27,6 +37,7 @@
     v.addEventListener('loadeddata',()=>tryPlay(v));
     v.addEventListener('canplay',()=>tryPlay(v));
     v.addEventListener('pause',()=>{if(v.isConnected&&!v.ended)setTimeout(()=>tryPlay(v),250)});
+    v.addEventListener('ended',()=>restartIfStillCurrent(v));
     tryPlay(v);
   }
 
@@ -49,13 +60,19 @@
 
   function scan(root){
     const scope=root&&root.querySelectorAll?root:document;
-    if(scope.matches&&scope.matches('.design-zone-preview video'))prepareVideo(scope);
+    if(scope.matches&&scope.matches('video'))prepareVideo(scope);
     if(scope.matches&&scope.matches('.design-zone-preview img'))replaceVideoImage(scope);
-    scope.querySelectorAll?.('.design-zone-preview video').forEach(prepareVideo);
+    scope.querySelectorAll?.('video').forEach(prepareVideo);
     scope.querySelectorAll?.('.design-zone-preview img').forEach(replaceVideoImage);
   }
 
   const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)})));
-  function init(){scan(document);observer.observe(document.body,{childList:true,subtree:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.querySelectorAll('.design-zone-preview video').forEach(tryPlay)});window.addEventListener('focus',()=>document.querySelectorAll('.design-zone-preview video').forEach(tryPlay));setInterval(()=>document.querySelectorAll('.design-zone-preview video').forEach(v=>{if(v.paused&&!v.ended)tryPlay(v)}),5000)}
+  function init(){
+    scan(document);
+    observer.observe(document.body,{childList:true,subtree:true});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.querySelectorAll('video').forEach(tryPlay)});
+    window.addEventListener('focus',()=>document.querySelectorAll('video').forEach(tryPlay));
+    setInterval(()=>document.querySelectorAll('video').forEach(v=>{if(v.paused&&!v.ended)tryPlay(v)}),5000);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
