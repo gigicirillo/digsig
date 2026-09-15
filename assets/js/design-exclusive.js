@@ -9,4 +9,12 @@
       index=0;
     }
   };
+  const originalInactive=showInactive;
+  showInactive=function(){
+    if(screen&&screen.designId&&(screen.useDesign!==false)){
+      stage.style.background='#000';
+      return;
+    }
+    return originalInactive();
+  };
 })();
