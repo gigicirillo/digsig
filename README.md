@@ -105,3 +105,11 @@ Il player ricontrolla la configurazione ogni 30 secondi. Se cambia la playlist, 
 5. cache offline/PWA
 6. login amministratore e ruoli
 7. monitoraggio player e log di riproduzione
+
+## Widget Notizie RSS
+
+In **Widget → Nuovo widget → Notizie RSS · Corriere della Sera** scegli Cronaca italiana, Prima pagina, Politica, Economia, Sport o Esteri. I feed ufficiali vengono letti direttamente dal browser e aggiornati ogni cinque minuti. Il filtro predefinito mostra soltanto le notizie della giornata corrente nel fuso `Europe/Rome`; sono disponibili anche ultime 24 ore e ultime disponibili con data. Il widget mostra fonte, titolo e data, alternando le notizie con intervallo configurabile. Il titolo si adatta allo spazio entro la dimensione massima scelta.
+
+Il widget funziona in anteprima, nelle zone dei design e nelle playlist, anche a schermo intero. In assenza di notizie del giorno non ripropone automaticamente quelle di ieri; in caso di errore segnala l'indisponibilità dell'aggiornamento. Non occorrono servizi proxy né modifiche al backend PHP.
+
+Test: con Node 20+, Playwright e Chrome installati, eseguire `node tests/rss-widget.test.cjs`.
