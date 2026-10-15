@@ -10,19 +10,24 @@ const path=require('node:path');
     let requests=0,unavailable=false;
     await page.route('https://www.corriere.it/**',route=>{
       requests++;
-      return route.fulfill({status:unavailable?503:200,contentType:'application/xml',headers:{'Access-Control-Allow-Origin':'*'},body:`<rss><channel>
-        <item><title>Primo titolo</title><link>https://www.corriere.it/a</link><pubDate>Thu, 15 Oct 2026 22:00:00 +0200</pubDate></item>
+      return route.fulfill({status:unavailable?503:200,contentType:'application/xml',headers:{'Access-Control-Allow-Origin':'*'},body:`<rss xmlns:media="http://search.yahoo.com/mrss/"><channel>
+        <item><title>Primo titolo</title><description>&lt;p&gt;Sottotitolo della notizia&lt;/p&gt;</description><media:thumbnail url="https://dimages2.corriereobjects.it/test-cover.jpg"/><link>https://www.corriere.it/a</link><pubDate>Thu, 15 Oct 2026 22:00:00 +0200</pubDate></item>
         <item><title>Secondo titolo</title><link>https://www.corriere.it/b</link><pubDate>Thu, 15 Oct 2026 21:00:00 +0200</pubDate></item>
         <item><title>Primo titolo duplicato</title><link>https://www.corriere.it/a</link><pubDate>Thu, 15 Oct 2026 22:00:00 +0200</pubDate></item>
       </channel></rss>`});
     });
+    await page.route('https://dimages2.corriereobjects.it/**',r=>r.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')}));
     await page.setContent('<div id="first"></div><div id="second"></div>');
     await page.addScriptTag({path:path.resolve(__dirname,'../assets/js/rss-widget.js')});
     await page.evaluate(()=>{digsigRSS.render(document.getElementById('first'),{rssFeed:'cronache',rssSeconds:5,rssBackfill:false});digsigRSS.render(document.getElementById('second'),{rssFeed:'cronache',rssSeconds:5,rssBackfill:false});});
     await page.waitForFunction(()=>document.querySelector('.rss-widget-title').textContent==='Primo titolo');
+    assert.equal(await page.locator('#first .rss-widget-subtitle').textContent(),'Sottotitolo della notizia');
+    assert.equal(await page.locator('#first .rss-widget-cover').getAttribute('src'),'https://dimages2.corriereobjects.it/test-cover.jpg');
     assert.equal(requests,1,'Concurrent widgets share one request');
     await page.clock.fastForward(5000);
     assert.equal(await page.locator('#first .rss-widget-title').textContent(),'Secondo titolo');
+    assert.equal(await page.locator('#first .rss-widget-cover').getAttribute('src'),null,'No cover from the previous article remains');
+    assert.equal(await page.locator('#first .rss-widget-subtitle').textContent(),'');
     await page.clock.fastForward(20000);
     assert.equal(await page.locator('#first .rss-widget-title').textContent(),'Nessuna notizia nel periodo selezionato','Yesterday is excluded at Rome midnight');
     unavailable=true;await page.clock.fastForward(300000);
@@ -31,6 +36,7 @@ const path=require('node:path');
     await page.evaluate(()=>document.body.replaceChildren());await page.waitForTimeout(30);
     await page.clock.fastForward(600000);assert.equal(requests,2,'Removed widgets stop refreshing');
     const parsed=await page.evaluate(()=>digsigRSS.parse('<rss><channel><item><title>&lt;img src=x onerror=alert(1)&gt;Test</title><link>javascript:alert(1)</link><pubDate>Thu, 15 Oct 2026 00:00:00 +0200</pubDate></item></channel></rss>'));
+    assert.equal(parsed[0].image,'');
     assert.equal(parsed[0].title,'Test');assert.equal(parsed[0].link,'');
     const sequenceCheck=await page.evaluate(()=>{
       const now=Date.parse('2026-10-15T12:00:00+02:00');
