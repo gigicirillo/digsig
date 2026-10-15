@@ -17,3 +17,17 @@
 .rss-widget-subtitle{line-height:1.35;opacity:.85;flex-shrink:0;overflow:hidden;overflow-wrap:anywhere}
 .rss-widget-meta{font-size:clamp(8px,2.5cqw,11px);line-height:1.3;opacity:.65;flex-shrink:0}
 @container (max-height:200px){.rss-widget-cover{height:32%;flex-basis:32%}.rss-widget-copy{padding:4px 8px;gap:2px}}
+
+/* Area-only transparency: preserve content opacity and source configuration. */
+.design-zone.zone-transparent-background,.design-zone-preview.zone-transparent-background{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
+.design-zone-preview.zone-transparent-background>div,
+.design-zone-preview.zone-transparent-background>div>div,
+.zone-transparent-background .rss-widget,
+.zone-transparent-background .rss-widget-copy,
+.zone-transparent-background .clock-widget,
+.zone-transparent-background .weather-widget,
+.zone-transparent-background .weather-widget-error,
+.zone-transparent-background .message-widget,
+.zone-transparent-background .slide,
+.zone-transparent-background video,
+.zone-transparent-background img{background:transparent!important}
