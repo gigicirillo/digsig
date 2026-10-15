@@ -6,6 +6,14 @@
 @media(max-width:700px){.widget-preview-wrap .weather-widget{align-items:flex-end}.widget-preview-wrap .weather-widget-icon{font-size:72px}}
 .message-editor{margin:12px 0}.message-editor-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;padding:10px;border:1px solid var(--line);border-radius:10px 10px 0 0}.message-editor-toolbar label{margin:0;font-size:12px}.message-editor-toolbar input[type=number]{width:90px}.message-editor-toolbar button{padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--text);cursor:pointer}.message-editor-content{min-height:180px;max-height:360px;overflow:auto;padding:16px;border:1px solid var(--line);border-top:0;background:#101820;color:white;font:24px Arial;outline-offset:2px}.message-editor-content p,.message-widget-text p{margin:0}.message-editor-content ul,.message-widget-text ul{padding-left:1.4em}.message-editor [hidden]{display:none}
 
-.rss-widget{width:100%;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:clamp(8px,3vw,28px);overflow:hidden;font-family:Inter,Arial,sans-serif}.rss-widget-source{font-size:12px;line-height:1.3;opacity:.8;flex-shrink:0}.rss-widget-title{display:block;color:inherit;text-decoration:none;font-weight:700;line-height:1.2;overflow-wrap:anywhere;flex-shrink:0}.rss-widget-title[href]:hover{text-decoration:underline}.rss-widget-meta{font-size:11px;line-height:1.3;opacity:.7;flex-shrink:0}.design-zone-preview .rss-widget{padding:clamp(5px,3cqw,24px);gap:clamp(3px,1cqh,10px)}
-
-.rss-widget-title{overflow:hidden}
+/* News card: cover above the editorial text, in every player and preview. */
+.rss-widget{width:100%;height:100%;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;font-family:Inter,Arial,sans-serif;container-type:size}
+.rss-widget-cover{display:block;width:100%;height:44%;min-height:0;flex:0 0 44%;object-fit:cover;object-position:center;background:rgba(0,0,0,.15)}
+.rss-widget-cover[hidden],.rss-widget-subtitle[hidden]{display:none}
+.rss-widget-copy{display:flex;flex-direction:column;flex:1;min-height:0;gap:clamp(3px,1.2cqh,10px);padding:clamp(6px,3cqw,24px);box-sizing:border-box;overflow:hidden}
+.rss-widget-source{font-size:clamp(9px,2.7cqw,12px);line-height:1.3;opacity:.75;flex-shrink:0;letter-spacing:.025em}
+.rss-widget-title{display:block;color:inherit;text-decoration:none;font-weight:700;line-height:1.18;overflow-wrap:anywhere;flex-shrink:0;overflow:hidden}
+.rss-widget-title[href]:hover{text-decoration:underline}
+.rss-widget-subtitle{line-height:1.35;opacity:.85;flex-shrink:0;overflow:hidden;overflow-wrap:anywhere}
+.rss-widget-meta{font-size:clamp(8px,2.5cqw,11px);line-height:1.3;opacity:.65;flex-shrink:0}
+@container (max-height:200px){.rss-widget-cover{height:32%;flex-basis:32%}.rss-widget-copy{padding:4px 8px;gap:2px}}
