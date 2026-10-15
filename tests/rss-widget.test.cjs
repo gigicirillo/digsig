@@ -51,6 +51,11 @@ const path=require('node:path');
     for(let i=0;i<12;i++){titles.push(await page.locator('.rss-widget-title').textContent());await page.clock.fastForward(5000);}
     assert.equal(new Set(titles).size,12,'Twelve different headlines appear in succession');
     assert.equal(await page.locator('.rss-widget-title').textContent(),'Notizia 1','Sequence loops after the twelfth headline');
+    const atom=await page.evaluate(()=>digsigRSS.parse('<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>External</title><link rel="self" href="/api"/><link rel="alternate" href="/article"/><summary>&lt;p&gt;Subtitle&lt;/p&gt;&lt;img src="https://images.example.test/cover.jpg"&gt;</summary></entry></feed>','https://news.example.test/feed'));
+    assert.equal(atom[0].link,'https://news.example.test/article');
+    assert.equal(atom[0].image,'https://images.example.test/cover.jpg');
+    assert.equal(atom[0].subtitle,'Subtitle');
+    assert.equal(atom[0].published,null);
     console.log('PASS twelve headlines, strict filtering, configurable count and playlist duration');
     console.log('PASS RSS rotation, deduplication, shared fetch, Rome midnight, refresh, failure state, cleanup and safe text/links');
   }finally{await browser.close();}

@@ -15,37 +15,46 @@
     doc.querySelectorAll('script,style,iframe,object').forEach(el=>el.remove());
     return doc.body.textContent.replace(/\s+/g,' ').trim();
   }
-  function imageUrl(raw) {
-    try {const u=new URL(raw);return u.protocol==='https:'&&['corriere.it','corriereobjects.it','rcsobjects.it'].some(host=>u.hostname===host||u.hostname.endsWith('.'+host))?u.href:'';}catch{return '';}
+  function safeUrl(raw,base) {
+    try {const u=new URL(raw,base);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}
   }
-  function parse(xml) {
+  function feedFor(w) {
+    if(w.rssFeed==='custom'){
+      const url=safeUrl(String(w.rssUrl||'').trim());
+      if(!url)throw new Error('Inserisci un URL HTTPS valido del feed RSS.');
+      return {url,label:new URL(url).hostname,custom:true};
+    }
+    return {...(feeds[w.rssFeed]||feeds.cronache),custom:false};
+  }
+  function parse(xml,base) {
     const doc = new DOMParser().parseFromString(xml,'application/xml');
     if(doc.querySelector('parsererror') || !doc.querySelector('rss,feed')) throw new Error('Feed non valido');
     const seen = new Set();
     return Array.from(doc.querySelectorAll('item,entry')).map(item => {
       const text = selector => item.querySelector(selector)?.textContent.trim() || '';
       const title = plainText(text('title'));
-      const description=text('description')||text('summary');
+      const description=text('description')||text('summary')||text('content');
       const subtitle=plainText(description);
       const media=Array.from(item.getElementsByTagName('*')).filter(el=>['thumbnail','content','enclosure'].includes(el.localName));
       const descriptionDoc=new DOMParser().parseFromString(description,'text/html');
-      const image=[...media.map(el=>el.getAttribute('url')||''),descriptionDoc.querySelector('img')?.getAttribute('src')||''].map(imageUrl).find(Boolean)||'';
-      let link = text('link') || item.querySelector('link')?.getAttribute('href') || '';
-      try { const u = new URL(link); if(u.protocol!=='https:' || !(u.hostname==='corriere.it'||u.hostname.endsWith('.corriere.it'))) link=''; } catch { link=''; }
-      const published = Date.parse(text('pubDate') || text('published') || text('updated'));
-      return {title,subtitle:subtitle===title?'':subtitle,image,link,published};
+      const image=[...media.map(el=>el.getAttribute('url')||''),descriptionDoc.querySelector('img')?.getAttribute('src')||''].map(raw=>raw?safeUrl(raw,base):'').find(Boolean)||'';
+      const atomLink=Array.from(item.querySelectorAll('link')).find(el=>!el.getAttribute('rel')||el.getAttribute('rel')==='alternate');
+      const rawLink=text('link')||atomLink?.getAttribute('href')||'';
+      const link=rawLink?safeUrl(rawLink,base):'';
+      const published = Date.parse(text('pubDate') || text('published') || text('updated')||Array.from(item.children).find(el=>el.localName==='date')?.textContent||'');
+      return {title,subtitle:subtitle===title?'':subtitle,image,link,published:Number.isFinite(published)?published:null};
     }).filter(item => {
       const key=item.link||item.title;
-      if(!item.title||!Number.isFinite(item.published)||seen.has(key)) return false;
+      if(!item.title||seen.has(key)) return false;
       seen.add(key);return true;
     }).sort((a,b)=>b.published-a.published);
   }
   function select(items,period='today',now=Date.now()) {
-    return items.filter(item=>item.published<=now && (period==='latest' || (period==='24h'?now-item.published<=86400000:day(item.published)===day(now))));
+    return items.filter(item=>(item.published===null||item.published<=now) && (period==='latest' || (item.published!==null&&(period==='24h'?now-item.published<=86400000:day(item.published)===day(now)))));
   }
   function sequence(items,w={},now=Date.now()) {
     const count=Math.max(1,Math.min(30,Math.floor(Number(w.rssCount)||12)));
-    const recent=items.filter(item=>item.published<=now).slice().sort((a,b)=>b.published-a.published);
+    const recent=items.filter(item=>item.published===null||item.published<=now).slice().sort((a,b)=>b.published-a.published);
     const matching=select(recent,w.rssPeriod||'today',now);
     return (w.rssBackfill===false?matching:[...matching,...recent.filter(item=>!matching.includes(item))]).slice(0,count);
   }
@@ -53,7 +62,8 @@
     if(w.customDuration)return Math.max(1,Number(w.duration)||15);
     return Math.max(1,Math.min(30,Math.floor(Number(w.rssCount)||12)))*Math.max(5,Math.min(120,Number(w.rssSeconds)||12));
   }
-  async function load(key) {
+  async function load(feed) {
+    const key=feed.url;
     const previous=cache.get(key);
     if(previous?.pending)return previous.pending;
     if(previous && Date.now()-previous.at<300000)return previous;
@@ -61,15 +71,15 @@
     entry.pending=(async()=>{
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
       try {
-        const response=await fetch(feeds[key].url,{signal:controller.signal,cache:'no-cache',credentials:'omit'});
+        const response=await fetch(feed.url,{signal:controller.signal,cache:'no-cache',credentials:'omit'});
         if(!response.ok)throw new Error('Feed non disponibile');
-        const items=parse(await response.text());entry.items=items;entry.at=Date.now();return entry;
+        const xml=await response.text(),items=parse(xml,response.url||feed.url);const doc=new DOMParser().parseFromString(xml,'application/xml');entry.title=plainText(doc.querySelector('channel > title,feed > title')?.textContent||feed.label);entry.items=items;entry.at=Date.now();return entry;
       } finally {clearTimeout(timeout);entry.pending=null;}
     })();cache.set(key,entry);return entry.pending;
   }
   function render(target,w) {
     if(!target)return;
-    const key=feeds[w.rssFeed]?w.rssFeed:'cronache';
+    let feed;try{feed=feedFor(w)}catch{target.textContent='URL del feed RSS non valido';return}const key=feed.url;
     const box=document.createElement('div');box.className='rss-widget';
     box.innerHTML='<img class="rss-widget-cover" alt="" hidden><div class="rss-widget-copy"><div class="rss-widget-source"></div><a class="rss-widget-title" target="_blank" rel="noopener noreferrer"></a><div class="rss-widget-subtitle" hidden></div><div class="rss-widget-meta"></div></div>';
     const cover=box.querySelector('.rss-widget-cover'),copy=box.querySelector('.rss-widget-copy'),source=box.querySelector('.rss-widget-source'),title=box.querySelector('.rss-widget-title'),subtitle=box.querySelector('.rss-widget-subtitle'),meta=box.querySelector('.rss-widget-meta');
@@ -77,7 +87,7 @@
     cover.decoding='async';cover.referrerPolicy='no-referrer';
     cover.onerror=()=>{cover.hidden=true;requestAnimationFrame(fit);};
     cover.onload=()=>requestAnimationFrame(fit);
-    source.textContent='Corriere della Sera · '+feeds[key].label;
+    source.textContent=feed.custom?feed.label:'Corriere della Sera · '+feed.label;
     title.textContent='Caricamento notizie…';
     const mode=w.backgroundMode||(w.backgroundTransparent?'transparent':'solid');
     if(mode==='transparent')box.style.background='transparent';
@@ -115,9 +125,9 @@
       if((item.image||'')!==coverUrl){coverUrl=item.image||'';cover.hidden=!coverUrl;if(coverUrl){cover.src=coverUrl;cover.alt='';}else cover.removeAttribute('src');}
       else if(!coverUrl)cover.hidden=true;
       if(item.link)title.href=item.link;else title.removeAttribute('href');
-      meta.textContent=new Date(item.published).toLocaleString('it-IT',{timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '+(index+1)+'/'+current.length+(failed?' · Aggiornamento non disponibile':'');
+      meta.textContent=(item.published===null?'Data non fornita':new Date(item.published).toLocaleString('it-IT',{timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))+' · '+(index+1)+'/'+current.length+(failed?' · Aggiornamento non disponibile':'');
     }
-    async function refresh(){try{const result=await load(key);if(disposed)return;items=result.items;failed=false;}catch{if(disposed)return;failed=true;}paint();}
+    async function refresh(){try{const result=await load(feed);if(disposed)return;if(feed.custom)source.textContent=result.title||feed.label;items=result.items;failed=false;}catch{if(disposed)return;failed=true;}paint();}
     const rotate=setInterval(()=>{index++;paint();},Math.max(5,Math.min(120,Number(w.rssSeconds)||12))*1000);
     const update=setInterval(refresh,300000);
     const instance={box,dispose(){disposed=true;if(positionKey&&items.length)positions.set(positionKey,index+1);resize.disconnect();clearInterval(rotate);clearInterval(update);active.delete(instance);}};
@@ -126,5 +136,5 @@
   }
   // Disconnect timers when a playlist advances, a preview closes or a design is rebuilt.
   new MutationObserver(()=>{active.forEach(instance=>{if(!instance.box.isConnected)instance.dispose();});}).observe(document.documentElement,{childList:true,subtree:true});
-  window.digsigRSS={feeds,parse,select,sequence,duration,render};
+  window.digsigRSS={feeds,parse,select,sequence,duration,render,feedFor,load};
 })();

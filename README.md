@@ -113,3 +113,8 @@ In **Widget → Nuovo widget → Notizie RSS · Corriere della Sera** scegli Cro
 Il widget funziona in anteprima, nelle zone dei design e nelle playlist, anche a schermo intero. Per impostazione predefinita mostra 12 titoli, completando il periodo selezionato con le notizie precedenti dello stesso feed (sempre con data visibile). Il completamento può essere disattivato e il numero di titoli è configurabile da 1 a 30. In playlist, senza durata personalizzata, lascia il tempo necessario per l’intera sequenza; in caso di errore segnala l'indisponibilità dell'aggiornamento. Non occorrono servizi proxy né modifiche al backend PHP.
 
 Test: con Node 20+, Playwright e Chrome installati, eseguire `node tests/rss-widget.test.cjs`.
+
+### Feed personalizzato
+Nel widget **Notizie RSS**, selezionare **Feed personalizzato (URL)** e inserire un indirizzo HTTPS RSS o Atom. **Verifica feed** controlla accessibilità e numero di notizie. Copertina, titolo, sommario, rotazione e aggiornamenti funzionano come per le fonti predefinite. Il nome della fonte deriva dal feed. Gli articoli senza data sono inclusi nelle ultime disponibili o nel completamento della sequenza, con la dicitura “Data non fornita”.
+
+La lettura avviene direttamente dal browser: il server del feed deve consentire richieste CORS dal sito. Feed protetti, non HTTPS o che bloccano la lettura esterna non sono supportati senza un servizio server dedicato. Non vengono inviate credenziali e non viene usato un proxy pubblico.
