@@ -8,7 +8,7 @@
     sport: {label:'Sport',url:'https://www.corriere.it/dynamic-feed/rss/section/Sport.xml'},
     esteri: {label:'Esteri',url:'https://www.corriere.it/dynamic-feed/rss/section/Esteri.xml'}
   };
-  const cache = new Map(), active = new Set();
+  const cache = new Map(), active = new Set(), positions = new Map();
   const day = value => new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
   function parse(xml) {
     const doc = new DOMParser().parseFromString(xml,'application/xml');
@@ -30,6 +30,16 @@
   }
   function select(items,period='today',now=Date.now()) {
     return items.filter(item=>item.published<=now && (period==='latest' || (period==='24h'?now-item.published<=86400000:day(item.published)===day(now))));
+  }
+  function sequence(items,w={},now=Date.now()) {
+    const count=Math.max(1,Math.min(30,Math.floor(Number(w.rssCount)||12)));
+    const recent=items.filter(item=>item.published<=now).slice().sort((a,b)=>b.published-a.published);
+    const matching=select(recent,w.rssPeriod||'today',now);
+    return (w.rssBackfill===false?matching:[...matching,...recent.filter(item=>!matching.includes(item))]).slice(0,count);
+  }
+  function duration(w) {
+    if(w.customDuration)return Math.max(1,Number(w.duration)||15);
+    return Math.max(1,Math.min(30,Math.floor(Number(w.rssCount)||12)))*Math.max(5,Math.min(120,Number(w.rssSeconds)||12));
   }
   async function load(key) {
     const previous=cache.get(key);
@@ -63,7 +73,8 @@
     const maxFontSize=Math.max(12,Math.min(120,Number(w.rssFontSize)||32));
     title.style.fontSize=maxFontSize+'px';
     target.replaceChildren(box);
-    let items=[],index=0,failed=false,disposed=false;
+    const positionKey=w.id?`${w.id}:${key}`:null;
+    let items=[],index=positions.get(positionKey)||0,failed=false,disposed=false;
     function fit() {
       if(disposed||!box.isConnected||!box.clientHeight)return;
       const style=getComputedStyle(box),gap=parseFloat(style.rowGap)||0;
@@ -77,7 +88,7 @@
     function paint() {
       if(disposed)return;
       requestAnimationFrame(fit);
-      const current=select(items,w.rssPeriod||'today');
+      const current=sequence(items,w);
       if(!current.length){title.textContent=failed?'Notizie temporaneamente non disponibili':'Nessuna notizia nel periodo selezionato';title.removeAttribute('href');meta.textContent='Aggiornamento automatico · '+new Date().toLocaleDateString('it-IT',{timeZone:'Europe/Rome'});return;}
       index%=current.length;const item=current[index];title.textContent=item.title;
       if(item.link)title.href=item.link;else title.removeAttribute('href');
@@ -86,11 +97,11 @@
     async function refresh(){try{const result=await load(key);if(disposed)return;items=result.items;failed=false;}catch{if(disposed)return;failed=true;}paint();}
     const rotate=setInterval(()=>{index++;paint();},Math.max(5,Math.min(120,Number(w.rssSeconds)||12))*1000);
     const update=setInterval(refresh,300000);
-    const instance={box,dispose(){disposed=true;resize.disconnect();clearInterval(rotate);clearInterval(update);active.delete(instance);}};
+    const instance={box,dispose(){disposed=true;if(positionKey&&items.length)positions.set(positionKey,index+1);resize.disconnect();clearInterval(rotate);clearInterval(update);active.delete(instance);}};
     active.add(instance);refresh();
     return instance.dispose;
   }
   // Disconnect timers when a playlist advances, a preview closes or a design is rebuilt.
   new MutationObserver(()=>{active.forEach(instance=>{if(!instance.box.isConnected)instance.dispose();});}).observe(document.documentElement,{childList:true,subtree:true});
-  window.digsigRSS={feeds,parse,select,render};
+  window.digsigRSS={feeds,parse,select,sequence,duration,render};
 })();
