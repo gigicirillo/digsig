@@ -31,3 +31,5 @@
 .zone-transparent-background .slide,
 .zone-transparent-background video,
 .zone-transparent-background img{background:transparent!important}
+
+.message-widget-none .message-widget-track,.message-widget-none .message-widget-text{animation:none!important;transition:none!important;transform:none;opacity:1}
