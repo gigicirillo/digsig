@@ -1,0 +1,16 @@
+{
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "abortcontroller-polyfill": "^1.7.8",
+    "acorn": "^8.19.0",
+    "core-js": "^3.50.0",
+    "esbuild": "^0.28.2",
+    "resize-observer-polyfill": "^1.5.1",
+    "whatwg-fetch": "^3.6.20"
+  },
+  "private": true,
+  "scripts": {
+    "build:player": "node scripts/build-player.cjs"
+  }
+}
