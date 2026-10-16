@@ -17,3 +17,8 @@ ResizeObserver, and the DOM methods used by the player. No CDN is required.
 
 ES5 parsing and browser smoke tests do not replace testing on physical TV hardware;
 TLS, codecs and CSS support still depend on the device.
+
+The live TV/radio widget lazily loads the local HLS.js library from `assets/vendor/`.
+The build copies it and its license from the locked npm dependency and checks ES5 syntax.
+RDS presets use the stream URLs declared by the official RDS Social TV page, checked
+on 2026-10-16. External streams can change independently of this repository.

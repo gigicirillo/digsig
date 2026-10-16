@@ -1,6 +1,11 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 const babel=require('@babel/core'),esbuild=require('esbuild'),acorn=require('acorn');
 process.chdir(path.join(__dirname,'..'));
+fs.mkdirSync('assets/vendor',{recursive:true});
+const hls=fs.readFileSync('node_modules/hls.js/dist/hls.min.js','utf8');
+acorn.parse(hls,{ecmaVersion:5});
+fs.writeFileSync('assets/vendor/hls.min.js',hls);
+fs.copyFileSync('node_modules/hls.js/LICENSE','assets/vendor/hls.LICENSE');
 const template=fs.readFileSync('scripts/player.template.html','utf8');
 const tags=[...template.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)];
 const sources=tags.map(([tag,inline])=>{const match=tag.match(/src="([^"?]+)/);return match?fs.readFileSync(match[1],'utf8'):inline;});
