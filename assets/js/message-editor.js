@@ -26,9 +26,20 @@
     let range = null;
     document.addEventListener('selectionchange', () => {
       const selection = window.getSelection();
-      if (selection.rangeCount && editor.contains(selection.anchorNode) && editor.contains(selection.focusNode)) range = selection.getRangeAt(0).cloneRange();
+      if (selection.rangeCount && editor.contains(selection.anchorNode) && editor.contains(selection.focusNode)) {range = selection.getRangeAt(0).cloneRange();syncControls(selection.anchorNode);}
     });
+    function syncControls(node) {
+      if (!node) { const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);node=walker.nextNode()||editor; }
+      const element=node.nodeType===3?node.parentElement:node,style=getComputedStyle(element);
+      const font=style.fontFamily.split(',')[0].replace(/["']/g,'').trim(),select=wrapper.querySelector('[data-command="fontName"]');
+      if(font&&!Array.from(select.options).some(o=>o.value===font))select.add(new Option(font,font));select.value=font;
+      wrapper.querySelector('[data-size]').value=Math.round(parseFloat(style.fontSize)||48);
+      const rgb=style.color.match(/\d+/g);if(rgb)wrapper.querySelector('[data-command="foreColor"]').value='#'+rgb.slice(0,3).map(n=>Number(n).toString(16).padStart(2,'0')).join('');
+      const flags={bold:Number(style.fontWeight)>=600||style.fontWeight==='bold',italic:style.fontStyle==='italic',underline:style.textDecorationLine.includes('underline'),strikeThrough:style.textDecorationLine.includes('line-through')};
+      Object.entries(flags).forEach(([command,on])=>wrapper.querySelector('[data-command="'+command+'"]').setAttribute('aria-pressed',String(on)));
+    }
     function sync() { textarea.value = editor.innerText; }
+
     function restore() {
       editor.focus(); const selection = window.getSelection();
       selection.removeAllRanges();
@@ -55,7 +66,7 @@
     });
     editor.addEventListener('drop', e => e.preventDefault());
     window.digsigMessageEditor = {
-      set(widget) { editor.innerHTML = window.digsigMessageHTML.render(widget || {}); range = null; sync(); },
+      set(widget) { editor.innerHTML = window.digsigMessageHTML.render(widget || {}); range = null; sync(); syncControls(); },
       get() { sync(); return window.digsigMessageHTML.sanitize(editor.innerHTML); }
     };
   }
