@@ -18,7 +18,7 @@
       if(typeof config==='undefined'||typeof screen==='undefined'||!config||!screen?.designId)return false;
       const d=(config.designs||[]).find(x=>x.id===screen.designId);if(!d)return false;
       stage.style.background=backgroundValue(d,'#000000');
-      const els=stage.querySelectorAll(':scope > .design-zone-preview');
+      const els=stage.querySelectorAll(':scope .design-zone-preview');
       (d.zones||[]).forEach((z,i)=>{
         const el=els[i];if(!el)return;
         el.style.opacity=String(Math.max(0,Math.min(100,Number(z.opacity??100)))/100);
