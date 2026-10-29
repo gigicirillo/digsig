@@ -12,3 +12,8 @@ for(const [url,provider] of [
 ]){const result=parse(url);assert.equal(result.provider,provider);assert.ok(result.embed.startsWith('https://'));assert.equal(parse(result.url).embed,result.embed)}
 for(const url of ['javascript:alert(1)','https://instagram.com.evil.test/reel/123/','https://evil.test/?url=https://instagram.com/reel/123/','https://user:pass@instagram.com/reel/123/','https://www.instagram.com/username/','https://vm.tiktok.com/ABC/','https://www.facebook.com/share/r/ABC/'])assert.throws(()=>parse(url));
 console.log('Reel URL validation and canonical round trips passed');
+
+const direct=sandbox.window.digsigReel.directUrl;
+assert.equal(direct('https://cdn.example.com/reel.mp4'),'https://cdn.example.com/reel.mp4');
+for(const url of ['http://cdn.example.com/v.mp4','javascript:alert(1)','https://user:pass@cdn.example.com/v.mp4','https://www.instagram.com/reel/test/','https://www.tiktok.com/@u/video/123'])assert.equal(direct(url),'');
+console.log('Autoplay direct-video URL validation passed');
