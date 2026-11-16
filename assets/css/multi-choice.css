@@ -1,0 +1,13 @@
+.selection-field{display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:13px}
+.multi-choice{max-height:240px;overflow-y:auto;overscroll-behavior:contain;padding:6px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.08)}
+.multi-choice-row{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;padding:11px 10px!important;margin:2px 0!important;border:1px solid transparent;border-radius:9px;cursor:pointer;color:var(--text);font-size:13px}
+.multi-choice-row input{width:16px!important;height:16px!important;flex:0 0 16px;margin:0;accent-color:#42d9ff}
+.multi-choice-row.selected{background:rgba(66,217,255,.09);border-color:rgba(66,217,255,.3)}
+.multi-choice-row:hover{background:rgba(66,217,255,.12)}
+.multi-choice-row:focus-within{outline:2px solid #42d9ff;outline-offset:-2px}
+.multi-choice-row span{overflow-wrap:anywhere;min-width:0}
+.playlist-drag-handle{touch-action:none;cursor:grab;user-select:none;flex:0 0 26px;font-size:22px;text-align:center;color:var(--muted);padding:8px 0}
+.sort-item.dragging{opacity:.45}.sort-item.drop-before{box-shadow:0 -3px 0 #42d9ff}.sort-item.drop-after{box-shadow:0 3px 0 #42d9ff}
+body.playlist-dragging,body.playlist-dragging *{cursor:grabbing!important;user-select:none!important}
+#playlistMediaChoices .sort-item.active{grid-template-columns:26px auto minmax(0,1fr) 110px auto}
+@media(max-width:600px){#playlistMediaChoices .sort-item.active{grid-template-columns:26px auto minmax(0,1fr)}#playlistMediaChoices .sort-item.active .playlist-duration-label{grid-column:3}#playlistMediaChoices .sort-item.active .sort-buttons{grid-column:3}}

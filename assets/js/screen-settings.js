@@ -6,7 +6,7 @@
   function populateDesigns(force){const sel=q('screenDesign');if(!sel||typeof state==='undefined'||!state.config)return;const designs=Array.isArray(state.config.designs)?state.config.designs:[];const sig=JSON.stringify(designs.map(d=>[d.id,d.name]));if(!force&&sel.dataset.designSig===sig)return;const val=sel.value;sel.innerHTML='<option value="">Seleziona design</option>'+designs.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('');sel.dataset.designSig=sig;if([...sel.options].some(o=>o.value===val))sel.value=val}
   function ensureUI(){
     const form=q('screenForm');if(!form)return false;
-    const playlist=q('screenPlaylist'),playlistLabel=playlist&&playlist.closest('label');
+    const playlist=q('screenPlaylist'),playlistLabel=playlist&&playlist.closest('.selection-field,label');
     if(playlistLabel&&!q('screenUsePlaylists')){
       playlistLabel.id='screenPlaylistBlock';
       const flag=document.createElement('label');flag.className='screen-source-flag';flag.innerHTML='<input type="checkbox" id="screenUsePlaylists"> Usa playlist';playlistLabel.insertAdjacentElement('beforebegin',flag);
@@ -22,9 +22,9 @@
       const flag=document.createElement('label');flag.className='screen-source-flag';flag.innerHTML='<input type="checkbox" id="screenUseDesign"> Applica design';q('screenDesignBlock').insertAdjacentElement('beforebegin',flag);
       q('screenUseDesign').addEventListener('change',syncVisibility);
     }
-    populateDesigns(false);syncVisibility();patchFunctions();return true;
+    window.digsigMultiChoice.refresh(playlist);populateDesigns(false);syncVisibility();patchFunctions();return true;
   }
-  function setForScreen(s){if(!ensureUI())return;const pids=Array.isArray(s?.playlistIds)&&s.playlistIds.length?s.playlistIds:(s?.playlistId?[s.playlistId]:[]);const useP=s?((s.usePlaylists!==false)&&pids.length>0):false;const useD=s?((s.useDesign!==false)&&!!s.designId):false;if(q('screenUsePlaylists'))q('screenUsePlaylists').checked=useP;if(q('screenUseDesign'))q('screenUseDesign').checked=useD;if(q('screenPlaylist'))Array.from(q('screenPlaylist').options).forEach(o=>o.selected=pids.includes(o.value));populateDesigns(true);if(q('screenDesign'))q('screenDesign').value=s?.designId||'';syncVisibility()}
+  function setForScreen(s){if(!ensureUI())return;const pids=Array.isArray(s?.playlistIds)&&s.playlistIds.length?s.playlistIds:(s?.playlistId?[s.playlistId]:[]);const useP=s?((s.usePlaylists!==false)&&pids.length>0):false;const useD=s?((s.useDesign!==false)&&!!s.designId):false;if(q('screenUsePlaylists'))q('screenUsePlaylists').checked=useP;if(q('screenUseDesign'))q('screenUseDesign').checked=useD;if(q('screenPlaylist'))Array.from(q('screenPlaylist').options).forEach(o=>o.selected=pids.includes(o.value));window.digsigMultiChoice.refresh(q('screenPlaylist'));populateDesigns(true);if(q('screenDesign'))q('screenDesign').value=s?.designId||'';syncVisibility()}
   function patchFunctions(){if(patched||typeof window.newScreen!=='function'||typeof window.editScreen!=='function')return;patched=true;const ns=window.newScreen,es=window.editScreen;window.newScreen=function(){ns();setForScreen(null)};window.editScreen=function(id){es(id);const s=typeof state!=='undefined'&&state.config?state.config.screens.find(x=>x.id===id):null;setForScreen(s)}}
   function boot(){if(initialized)return;if(ensureUI()){initialized=true;return}let tries=0;const t=setInterval(()=>{tries++;if(ensureUI()||tries>40){clearInterval(t);initialized=true}},100)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
